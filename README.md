@@ -133,14 +133,7 @@ To test the plugin locally:
 ### Running Tests
 
 ```bash
-# Run unit tests
-npm run test-cases
-
-# Run integration tests
 npm run test
-
-# Run demo
-node demo/run-demo.js
 ```
 
 ## Contributing

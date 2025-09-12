@@ -147,6 +147,18 @@ const valid = [
           },
       })(CrowdCoverage);
       `
+    },
+    // Component with conditional JSX with Boundary
+    {
+      code: `
+      export const ConditionalComponent = ({ show }) => {
+        return (
+          <Boundary>
+            {show ? <div>Shown</div> : null}
+          </Boundary>
+        );
+      };
+      `
     }
 ];
 
