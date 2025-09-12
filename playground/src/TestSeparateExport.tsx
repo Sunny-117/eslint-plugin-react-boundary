@@ -12,15 +12,15 @@ function GoodComponent() {
 export default GoodComponent;
 
 // Test case 2: Function defined first, then named export (without Boundary) - should trigger error
-function BadComponent() {
-  return <div>This should trigger an error</div>;
-}
+// function BadComponent() {
+//   return <div>This should trigger an error</div>;
+// }
 
-export { BadComponent };
+// export { BadComponent };
 
 // Test case 3: Arrow function defined first, then named export (without Boundary) - should trigger error
-const AnotherBadComponent = () => {
-  return <span>This should also trigger an error</span>;
-}
+// const AnotherBadComponent = () => {
+//   return <span>This should also trigger an error</span>;
+// }
 
-export { AnotherBadComponent };
+// export { AnotherBadComponent };
