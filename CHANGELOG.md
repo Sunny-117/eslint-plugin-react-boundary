@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.4
+
+[compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.3...v0.0.4)
+
+### 🏡 Chore
+
+- 🤖 package.json ([2493d9a](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/2493d9a))
+
+### ❤️ Contributors
+
+- Sunny-117 <zhiqiangfu6@gmail.com>
+
 ## v0.0.3
 
 
