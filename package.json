@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-react-boundary",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "ESLint plugin to ensure React components are wrapped with Boundary",
   "main": "index.js",
   "scripts": {
