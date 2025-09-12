@@ -25,10 +25,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/eslint-plugin-react-boundary.git"
+    "url": "https://github.com/Sunny-117/eslint-plugin-react-boundary.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/eslint-plugin-react-boundary/issues"
+    "url": "https://github.com/Sunny-117/eslint-plugin-react-boundary/issues"
   },
-  "homepage": "https://github.com/yourusername/eslint-plugin-react-boundary#readme"
+  "homepage": "https://github.com/Sunny-117/eslint-plugin-react-boundary#readme"
 }
