@@ -127,8 +127,7 @@ To test the plugin locally:
 
 1. Clone the repository
 2. Run `npm install`
-3. Run tests: `npm run test-cases`
-4. Run demo: `node demo/run-demo.js`
+3. Run tests: `npm run test`
 
 ### Running Tests
 
