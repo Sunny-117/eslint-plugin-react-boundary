@@ -132,6 +132,22 @@ const valid = [
       export { Header };
     `,
     },
+
+    {
+      code: `
+      function CrowdCoverage() {
+        return <div>123</div>
+      }
+      export default withBoundary({
+          pendingFallback() {
+              return <Loading />;
+          },
+          renderError() {
+              return <div className="error">接口异常，请刷新重试</div>;
+          },
+      })(CrowdCoverage);
+      `
+    }
 ];
 
 // Invalid test cases (should trigger the rule)
