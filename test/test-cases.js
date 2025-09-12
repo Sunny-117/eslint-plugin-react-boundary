@@ -81,6 +81,57 @@ const valid = [
       };
     `,
     },
+
+    // Component defined first, then exported with default export (wrapped with Boundary)
+    {
+        code: `
+      import { Boundary } from 'react-suspense-boundary';
+
+      function MyComponent() {
+        return (
+          <Boundary>
+            <div>Hello World</div>
+          </Boundary>
+        );
+      }
+
+      export default MyComponent;
+    `,
+    },
+
+    // Component defined first, then exported with named export (wrapped with Boundary)
+    {
+        code: `
+      import { Boundary } from 'react-suspense-boundary';
+
+      function MyComponent() {
+        return (
+          <Boundary>
+            <div>Hello World</div>
+          </Boundary>
+        );
+      }
+
+      export { MyComponent };
+    `,
+    },
+
+    // Arrow function component defined first, then exported (wrapped with Boundary)
+    {
+        code: `
+      import { Boundary } from 'react-suspense-boundary';
+
+      const Header = () => {
+        return (
+          <Boundary>
+            <header>Header</header>
+          </Boundary>
+        );
+      }
+
+      export { Header };
+    `,
+    },
 ];
 
 // Invalid test cases (should trigger the rule)
@@ -170,6 +221,88 @@ const invalid = [
             messageId: 'missingBoundary',
             data: {
                 componentName: 'ConditionalComponent',
+                boundaryComponent: 'Boundary',
+            },
+        }],
+    },
+
+    // Component defined first, then exported with default export (without Boundary)
+    {
+        code: `
+      function MyComponent() {
+        return <div>Hello World</div>;
+      }
+
+      export default MyComponent;
+    `,
+        errors: [{
+            messageId: 'missingBoundary',
+            data: {
+                componentName: 'MyComponent',
+                boundaryComponent: 'Boundary',
+            },
+        }],
+    },
+
+    // Component defined first, then exported with named export (without Boundary)
+    {
+        code: `
+      function MyComponent() {
+        return <div>Hello World</div>;
+      }
+
+      export { MyComponent };
+    `,
+        errors: [{
+            messageId: 'missingBoundary',
+            data: {
+                componentName: 'MyComponent',
+                boundaryComponent: 'Boundary',
+            },
+        }],
+    },
+
+    // Arrow function component defined first, then exported (without Boundary)
+    {
+        code: `
+      const Header = () => {
+        return <header>Header</header>;
+      }
+
+      export { Header };
+    `,
+        errors: [{
+            messageId: 'missingBoundary',
+            data: {
+                componentName: 'Header',
+                boundaryComponent: 'Boundary',
+            },
+        }],
+    },
+
+    // Multiple components, some defined and exported separately
+    {
+        code: `
+      import { Boundary } from 'react-suspense-boundary';
+
+      function GoodComponent() {
+        return (
+          <Boundary>
+            <div>Good</div>
+          </Boundary>
+        );
+      }
+
+      function BadComponent() {
+        return <div>Bad</div>;
+      }
+
+      export { GoodComponent, BadComponent };
+    `,
+        errors: [{
+            messageId: 'missingBoundary',
+            data: {
+                componentName: 'BadComponent',
                 boundaryComponent: 'Boundary',
             },
         }],

@@ -23,6 +23,9 @@ importers:
       react-dom:
         specifier: ^19.1.1
         version: 19.1.1(react@19.1.1)
+      react-suspense-boundary:
+        specifier: ^3.0.0
+        version: 3.0.0(react@19.1.1)
     devDependencies:
       '@eslint/js':
         specifier: ^9.33.0
@@ -967,6 +970,11 @@ packages:
   react-refresh@0.17.0:
     resolution: {integrity: sha512-z6F7K9bV85EfseRCp2bzrpyQ0Gkw1uLoCel9XBVWPg/TjRj94SkJzUTGfOa4bs7iJvBWtQG0Wq7wnI0syw3EBQ==}
     engines: {node: '>=0.10.0'}
+
+  react-suspense-boundary@3.0.0:
+    resolution: {integrity: sha512-8bVTRTNcpiGD+TEIZMiOlbtaHOX4jXDp3KAJMQ7490s4bGDGk49oeZ8IsCne+9/4DfVy3V6kU895MQU6i+YrWw==}
+    peerDependencies:
+      react: '>= 18'
 
   react@19.1.1:
     resolution: {integrity: sha512-w8nqGImo45dmMIfljjMwOGtbmC/mk4CMYhWIicdSflH91J9TyCyczcPFXJzrZ/ZXcgGRFeP6BU0BEJTw6tZdfQ==}
@@ -1971,6 +1979,11 @@ snapshots:
       scheduler: 0.26.0
 
   react-refresh@0.17.0: {}
+
+  react-suspense-boundary@3.0.0(react@19.1.1):
+    dependencies:
+      fast-json-stable-stringify: 2.1.0
+      react: 19.1.1
 
   react@19.1.1: {}
 

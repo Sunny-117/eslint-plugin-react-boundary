@@ -45,6 +45,7 @@ const rule = {
         let hasBoundaryImport = false;
         let boundaryImportName = boundaryComponent;
         const exportedComponents = [];
+        const definedComponents = new Map(); // Track all defined components
         const sourceCode = context.getSourceCode();
 
         // 检查是否是 React 组件文件
@@ -177,6 +178,35 @@ const rule = {
                 }
             },
 
+            // 检查函数声明（可能稍后被导出）
+            FunctionDeclaration(node) {
+                if (!isReactFile()) {return;}
+
+                if (node.id && isComponentName(node.id.name) && isFunctionComponent(node)) {
+                    definedComponents.set(node.id.name, {
+                        name: node.id.name,
+                        node: node,
+                        type: 'function'
+                    });
+                }
+            },
+
+            // 检查变量声明（可能是箭头函数组件）
+            VariableDeclaration(node) {
+                if (!isReactFile()) {return;}
+
+                node.declarations.forEach(declarator => {
+                    if (declarator.id.name && isComponentName(declarator.id.name)
+                        && isFunctionComponent(declarator.init)) {
+                        definedComponents.set(declarator.id.name, {
+                            name: declarator.id.name,
+                            node: declarator.init,
+                            type: 'variable'
+                        });
+                    }
+                });
+            },
+
             // 检查命名导出
             ExportNamedDeclaration(node) {
                 if (!isReactFile()) {return;}
@@ -204,6 +234,23 @@ const rule = {
                             }
                         });
                     }
+                } else if (node.specifiers) {
+                    // export { Component } 或 export { Component as MyComponent }
+                    node.specifiers.forEach(specifier => {
+                        if (specifier.type === 'ExportSpecifier') {
+                            const localName = specifier.local.name;
+                            const exportedName = specifier.exported.name;
+                            const definedComponent = definedComponents.get(localName);
+
+                            if (definedComponent) {
+                                exportedComponents.push({
+                                    name: exportedName,
+                                    node: definedComponent.node,
+                                    type: 'named',
+                                });
+                            }
+                        }
+                    });
                 }
             },
 
@@ -223,8 +270,14 @@ const rule = {
                 } else if (node.declaration.type === 'Identifier') {
                     // export default Component (引用已定义的组件)
                     componentName = node.declaration.name;
-                    // 需要找到原始定义来检查
-                    // 这里简化处理，假设已定义的组件是正确的
+                    const definedComponent = definedComponents.get(componentName);
+                    if (definedComponent) {
+                        exportedComponents.push({
+                            name: componentName,
+                            node: definedComponent.node,
+                            type: 'default',
+                        });
+                    }
                     return;
                 }
 
