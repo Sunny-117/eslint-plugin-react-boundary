@@ -1,14 +1,11 @@
-#!/usr/bin/env node
-
 /**
- * Simple test script to verify the plugin works
+ * Test file to demonstrate the new functionality for separately defined and exported components
  */
 
 const {ESLint} = require('eslint');
-const path = require('path');
 
-async function testPlugin() {
-    console.log('🧪 Testing eslint-plugin-react-boundary...\n');
+async function testSeparateExports() {
+    console.log('🧪 Testing separate export functionality...\n');
 
     // Create ESLint instance with our plugin
     const eslint = new ESLint({
@@ -26,7 +23,7 @@ async function testPlugin() {
                     },
                 },
                 plugins: {
-                    'react-boundary': require('./index'),
+                    'react-boundary': require('../index'),
                 },
                 rules: {
                     'react-boundary/require-boundary': 'error',
@@ -35,40 +32,91 @@ async function testPlugin() {
         ],
     });
 
-    // Test cases
+    // Test cases for separate exports
     const testCases = [
         {
-            name: 'Bad Component (should have errors)',
-            code: `
-        export function BadComponent() {
-          return <div>Hello World</div>;
-        }
-      `,
-            shouldHaveErrors: true,
-        },
-        {
-            name: 'Good Component (should be clean)',
+            name: 'Function defined first, then default export (with Boundary) - should pass',
             code: `
         import { Boundary } from 'react-suspense-boundary';
         
-        export function GoodComponent() {
+        function MyComponent() {
           return (
             <Boundary>
               <div>Hello World</div>
             </Boundary>
           );
         }
+        
+        export default MyComponent;
       `,
             shouldHaveErrors: false,
         },
         {
-            name: 'Non-React file (should be ignored)',
+            name: 'Function defined first, then default export (without Boundary) - should fail',
             code: `
-        export function utilityFunction() {
-          return "not a component";
+        function MyComponent() {
+          return <div>Hello World</div>;
         }
+        
+        export default MyComponent;
+      `,
+            shouldHaveErrors: true,
+        },
+        {
+            name: 'Function defined first, then named export (with Boundary) - should pass',
+            code: `
+        import { Boundary } from 'react-suspense-boundary';
+        
+        function MyComponent() {
+          return (
+            <Boundary>
+              <div>Hello World</div>
+            </Boundary>
+          );
+        }
+        
+        export { MyComponent };
       `,
             shouldHaveErrors: false,
+        },
+        {
+            name: 'Function defined first, then named export (without Boundary) - should fail',
+            code: `
+        function MyComponent() {
+          return <div>Hello World</div>;
+        }
+        
+        export { MyComponent };
+      `,
+            shouldHaveErrors: true,
+        },
+        {
+            name: 'Arrow function defined first, then named export (with Boundary) - should pass',
+            code: `
+        import { Boundary } from 'react-suspense-boundary';
+        
+        const Header = () => {
+          return (
+            <Boundary>
+              <header>Header</header>
+            </Boundary>
+          );
+        }
+        
+        export { Header };
+      `,
+            shouldHaveErrors: false,
+        },
+        {
+            name: 'Arrow function defined first, then named export (without Boundary) - should fail',
+            code: `
+        const Header = () => {
+          return <header>Header</header>;
+        }
+        
+        export { Header };
+      `,
+            shouldHaveErrors: true,
         },
     ];
 
@@ -112,32 +160,9 @@ async function testPlugin() {
         console.log('');
     }
 
-    // Test with actual files
-    console.log('📁 Testing with example files...\n');
-
-    try {
-        const badResults = await eslint.lintFiles(['examples/bad-component.jsx']);
-        const goodResults = await eslint.lintFiles(['examples/good-component.jsx']);
-
-        console.log(`📄 bad-component.jsx: ${badResults[0].messages.length} errors`);
-        badResults[0].messages.forEach(msg => {
-            console.log(`   - Line ${msg.line}: ${msg.message}`);
-        });
-
-        console.log(`📄 good-component.jsx: ${goodResults[0].messages.length} errors`);
-        if (goodResults[0].messages.length > 0) {
-            goodResults[0].messages.forEach(msg => {
-                console.log(`   - Line ${msg.line}: ${msg.message}`);
-            });
-        }
-
-    } catch (error) {
-        console.log(`⚠️  Could not test example files: ${error.message}`);
-    }
-
     console.log('\n' + '='.repeat(50));
     if (allTestsPassed) {
-        console.log('🎉 All tests passed! Plugin is working correctly.');
+        console.log('🎉 All separate export tests passed! New functionality is working correctly.');
     } else {
         console.log('💥 Some tests failed. Please check the implementation.');
         process.exit(1);
@@ -145,7 +170,7 @@ async function testPlugin() {
 }
 
 // Run tests
-testPlugin().catch(error => {
+testSeparateExports().catch(error => {
     console.error('Test failed:', error);
     process.exit(1);
 });

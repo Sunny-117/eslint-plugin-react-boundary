@@ -4,9 +4,11 @@
   "description": "ESLint plugin to ensure React components are wrapped with Boundary",
   "main": "index.js",
   "scripts": {
-    "test": "node test-plugin.js",
+    "test": "npm run test-plugin && npm run test-cases && npm run test-separate",
+    "test-plugin": "node test/test-plugin.js",
     "test-cases": "node test/test-cases.js",
-    "test-separate": "node test-separate-export.js"
+    "test-separate": "node test/test-separate-export.js",
+    "commit": "git-cz"
   },
   "keywords": [
     "eslint",
@@ -31,5 +33,8 @@
   "bugs": {
     "url": "https://github.com/Sunny-117/eslint-plugin-react-boundary/issues"
   },
-  "homepage": "https://github.com/Sunny-117/eslint-plugin-react-boundary#readme"
+  "homepage": "https://github.com/Sunny-117/eslint-plugin-react-boundary#readme",
+  "devDependencies": {
+    "git-cz": "^4.9.0"
+  }
 }
