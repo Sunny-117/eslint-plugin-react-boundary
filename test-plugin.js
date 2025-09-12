@@ -12,23 +12,27 @@ async function testPlugin() {
 
     // Create ESLint instance with our plugin
     const eslint = new ESLint({
-        baseConfig: {
-            parserOptions: {
-                ecmaVersion: 2018,
-                sourceType: 'module',
-                ecmaFeatures: {
-                    jsx: true,
+        overrideConfigFile: true,
+        overrideConfig: [
+            {
+                files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+                languageOptions: {
+                    ecmaVersion: 2018,
+                    sourceType: 'module',
+                    parserOptions: {
+                        ecmaFeatures: {
+                            jsx: true,
+                        },
+                    },
+                },
+                plugins: {
+                    'react-boundary': require('./index'),
+                },
+                rules: {
+                    'react-boundary/require-boundary': 'error',
                 },
             },
-            plugins: ['react-boundary'],
-            rules: {
-                'react-boundary/require-boundary': 'error',
-            },
-        },
-        useEslintrc: false,
-        plugins: {
-            'react-boundary': require('./index'),
-        },
+        ],
     });
 
     // Test cases

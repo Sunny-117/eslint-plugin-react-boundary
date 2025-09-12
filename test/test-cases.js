@@ -6,11 +6,13 @@ const {RuleTester} = require('eslint');
 const rule = require('../index').rules['require-boundary'];
 
 const ruleTester = new RuleTester({
-    parserOptions: {
+    languageOptions: {
         ecmaVersion: 2018,
         sourceType: 'module',
-        ecmaFeatures: {
-            jsx: true,
+        parserOptions: {
+            ecmaFeatures: {
+                jsx: true,
+            },
         },
     },
 });
