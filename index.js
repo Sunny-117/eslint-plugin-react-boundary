@@ -1,0 +1,269 @@
+/* eslint-disable max-len */
+/* eslint-disable max-statements-per-line */
+/* eslint-disable no-use-before-define */
+/**
+ * ESLint plugin to ensure React components are wrapped with <Boundary>
+ */
+
+const rule = {
+    meta: {
+        type: 'problem',
+        docs: {
+            description: 'Ensure React components are wrapped with <Boundary>',
+            category: 'Best Practices',
+            recommended: true,
+        },
+        fixable: 'code',
+        schema: [
+            {
+                type: 'object',
+                properties: {
+                    boundaryComponent: {
+                        type: 'string',
+                        default: 'Boundary',
+                    },
+                    importSource: {
+                        type: 'string',
+                        default: 'react-suspense-boundary',
+                    },
+                },
+                additionalProperties: false,
+            },
+        ],
+        messages: {
+            missingBoundary: 'React component "{{componentName}}" should be wrapped with <{{boundaryComponent}}>',
+            addBoundaryImport: 'Add {{boundaryComponent}} import from "{{importSource}}"',
+        },
+    },
+
+    create(context) {
+        const options = context.options[0] || {};
+        const boundaryComponent = options.boundaryComponent || 'Boundary';
+        const importSource = options.importSource || 'react-suspense-boundary';
+
+        let hasReactImport = false;
+        let hasBoundaryImport = false;
+        let boundaryImportName = boundaryComponent;
+        const exportedComponents = [];
+        const sourceCode = context.getSourceCode();
+
+        // 检查是否是 React 组件文件
+        function isReactFile() {
+            const text = sourceCode.getText();
+            return hasReactImport
+             || text.includes('jsx')
+             || text.includes('React')
+             || text.includes('<') // 包含 JSX 语法
+             || text.includes('JSX')
+             || context.getFilename().match(/\.(jsx|tsx)$/);
+        }
+
+        // 检查节点是否是函数组件
+        function isFunctionComponent(node) {
+            if (!node) {return false;}
+
+            // 函数声明: function Component() {}
+            if (node.type === 'FunctionDeclaration') {
+                return isComponentName(node.id?.name) && hasJSXReturn(node.body);
+            }
+
+            // 箭头函数: const Component = () => {}
+            if (node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression') {
+                const body = node.body;
+                // 检查是否返回 JSX
+                return hasJSXReturn(body);
+            }
+
+            return false;
+        }
+
+        // 检查是否是组件名称（首字母大写）
+        function isComponentName(name) {
+            return name && /^[A-Z]/.test(name);
+        }
+
+        // 检查函数体是否返回 JSX
+        function hasJSXReturn(body) {
+            if (!body) {return false;}
+
+            // 直接返回 JSX: () => <div>...</div>
+            if (body.type === 'JSXElement' || body.type === 'JSXFragment') {
+                return true;
+            }
+
+            // 块语句中的 return
+            if (body.type === 'BlockStatement') {
+                return body.body.some(stmt => {
+                    if (stmt.type === 'ReturnStatement') {
+                        const arg = stmt.argument;
+                        return arg && (
+                            arg.type === 'JSXElement'
+              || arg.type === 'JSXFragment'
+              || (arg.type === 'ConditionalExpression' && hasJSXInConditional(arg))
+              || (arg.type === 'LogicalExpression' && hasJSXInLogical(arg))
+                        );
+                    }
+                    return false;
+                });
+            }
+
+            return false;
+        }
+
+        // 检查条件表达式中是否有 JSX
+        function hasJSXInConditional(node) {
+            return (node.consequent && (node.consequent.type === 'JSXElement' || node.consequent.type === 'JSXFragment'))
+             || (node.alternate && (node.alternate.type === 'JSXElement' || node.alternate.type === 'JSXFragment'));
+        }
+
+        // 检查逻辑表达式中是否有 JSX
+        function hasJSXInLogical(node) {
+            return (node.left && (node.left.type === 'JSXElement' || node.left.type === 'JSXFragment'))
+             || (node.right && (node.right.type === 'JSXElement' || node.right.type === 'JSXFragment'));
+        }
+
+        // 检查组件是否被 Boundary 包裹
+        function isWrappedWithBoundary(node) {
+            if (!node || !node.body) {return false;}
+
+            // 对于箭头函数直接返回 JSX
+            if (node.body.type === 'JSXElement') {
+                return isJSXWrappedWithBoundary(node.body);
+            }
+
+            // 对于块语句
+            if (node.body.type === 'BlockStatement') {
+                const returnStatements = node.body.body.filter(stmt => stmt.type === 'ReturnStatement');
+                return returnStatements.some(stmt => {
+                    if (stmt.argument && stmt.argument.type === 'JSXElement') {
+                        return isJSXWrappedWithBoundary(stmt.argument);
+                    }
+                    return false;
+                });
+            }
+
+            return false;
+        }
+
+        // 检查 JSX 元素是否被 Boundary 包裹
+        function isJSXWrappedWithBoundary(jsxElement) {
+            if (!jsxElement || jsxElement.type !== 'JSXElement') {return false;}
+
+            const openingElement = jsxElement.openingElement;
+            if (!openingElement || !openingElement.name) {return false;}
+
+            // 检查是否是 Boundary 组件
+            const elementName = openingElement.name.name;
+            return elementName === boundaryImportName;
+        }
+
+        return {
+            // 检查 import 语句
+            ImportDeclaration(node) {
+                if (node.source.value === 'react') {
+                    hasReactImport = true;
+                }
+
+                if (node.source.value === importSource) {
+                    hasBoundaryImport = true;
+                    // 检查导入的 Boundary 名称
+                    const boundarySpecifier = node.specifiers.find(spec =>
+                        (spec.type === 'ImportSpecifier' && spec.imported.name === boundaryComponent)
+            || (spec.type === 'ImportDefaultSpecifier')
+                    );
+                    if (boundarySpecifier) {
+                        boundaryImportName = boundarySpecifier.local.name;
+                    }
+                }
+            },
+
+            // 检查命名导出
+            ExportNamedDeclaration(node) {
+                if (!isReactFile()) {return;}
+
+                if (node.declaration) {
+                    // export function Component() {} 或 export const Component = () => {}
+                    if (node.declaration.type === 'FunctionDeclaration') {
+                        const component = node.declaration;
+                        if (isFunctionComponent(component)) {
+                            exportedComponents.push({
+                                name: component.id.name,
+                                node: component,
+                                type: 'named',
+                            });
+                        }
+                    } else if (node.declaration.type === 'VariableDeclaration') {
+                        node.declaration.declarations.forEach(declarator => {
+                            if (declarator.id.name && isComponentName(declarator.id.name)
+                  && isFunctionComponent(declarator.init)) {
+                                exportedComponents.push({
+                                    name: declarator.id.name,
+                                    node: declarator.init,
+                                    type: 'named',
+                                });
+                            }
+                        });
+                    }
+                }
+            },
+
+            // 检查默认导出
+            ExportDefaultDeclaration(node) {
+                if (!isReactFile()) {return;}
+
+                let componentNode = null;
+                let componentName = 'default';
+
+                if (node.declaration.type === 'FunctionDeclaration') {
+                    componentNode = node.declaration;
+                    componentName = node.declaration.id?.name || 'default';
+                } else if (node.declaration.type === 'ArrowFunctionExpression'
+                   || node.declaration.type === 'FunctionExpression') {
+                    componentNode = node.declaration;
+                } else if (node.declaration.type === 'Identifier') {
+                    // export default Component (引用已定义的组件)
+                    componentName = node.declaration.name;
+                    // 需要找到原始定义来检查
+                    // 这里简化处理，假设已定义的组件是正确的
+                    return;
+                }
+
+                if (componentNode && isFunctionComponent(componentNode)) {
+                    exportedComponents.push({
+                        name: componentName,
+                        node: componentNode,
+                        type: 'default',
+                    });
+                }
+            },
+
+            // 程序结束时检查所有导出的组件
+            'Program:exit'() {
+                if (!isReactFile() || exportedComponents.length === 0) {return;}
+
+                exportedComponents.forEach(component => {
+                    if (!isWrappedWithBoundary(component.node)) {
+                        context.report({
+                            node: component.node,
+                            messageId: 'missingBoundary',
+                            data: {
+                                componentName: component.name,
+                                boundaryComponent: boundaryImportName,
+                            },
+                            // TODO: 实现 auto-fix 功能
+                            // fix(fixer) {
+                            //     // 自动修复逻辑
+                            // }
+                        });
+                    }
+                });
+            },
+        };
+    },
+};
+
+module.exports = {
+    rules: {
+        'require-boundary': rule,
+    },
+};
