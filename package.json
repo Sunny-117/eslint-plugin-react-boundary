@@ -4,10 +4,11 @@
   "description": "ESLint plugin to ensure React components are wrapped with Boundary",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test-plugin && npm run test-cases && npm run test-separate",
+    "test": "npm run test-plugin && npm run test-cases && npm run test-separate && npm run test-array-config",
     "test-plugin": "node test/test-plugin.js",
     "test-cases": "node test/test-cases.js",
     "test-separate": "node test/test-separate-export.js",
+    "test-array-config": "node test/test-array-config.js",
     "commit": "git-cz",
     "release": "changelogen --release && npm publish"
   },

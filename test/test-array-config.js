@@ -23,7 +23,7 @@ async function testArrayConfig() {
                     },
                 },
                 plugins: {
-                    'react-boundary': require('./index'),
+                    'react-boundary': require('../index'),
                 },
                 rules: {
                     'react-boundary/require-boundary': ['error', {
