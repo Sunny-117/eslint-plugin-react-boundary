@@ -19,8 +19,19 @@ const rule = {
                 type: 'object',
                 properties: {
                     boundaryComponent: {
-                        type: 'string',
-                        default: 'Boundary',
+                        oneOf: [
+                            {
+                                type: 'string',
+                                default: 'Boundary',
+                            },
+                            {
+                                type: 'array',
+                                items: {
+                                    type: 'string',
+                                },
+                                minItems: 1,
+                            },
+                        ],
                     },
                     importSource: {
                         type: 'string',
@@ -38,12 +49,15 @@ const rule = {
 
     create(context) {
         const options = context.options[0] || {};
-        const boundaryComponent = options.boundaryComponent || 'Boundary';
+        const boundaryComponentConfig = options.boundaryComponent || 'Boundary';
+        const boundaryComponents = Array.isArray(boundaryComponentConfig)
+            ? boundaryComponentConfig
+            : [boundaryComponentConfig];
         const importSource = options.importSource || 'react-suspense-boundary';
 
         let hasReactImport = false;
         let hasBoundaryImport = false;
-        let boundaryImportName = boundaryComponent;
+        const boundaryImportNames = new Set(); // Track all imported boundary component names
         const exportedComponents = [];
         const definedComponents = new Map(); // Track all defined components
         const sourceCode = context.getSourceCode();
@@ -153,9 +167,9 @@ const rule = {
             const openingElement = jsxElement.openingElement;
             if (!openingElement || !openingElement.name) {return false;}
 
-            // 检查是否是 Boundary 组件
+            // 检查是否是任何一个配置的边界组件
             const elementName = openingElement.name.name;
-            return elementName === boundaryImportName;
+            return boundaryImportNames.has(elementName) || boundaryComponents.includes(elementName);
         }
 
         return {
@@ -167,14 +181,18 @@ const rule = {
 
                 if (node.source.value === importSource) {
                     hasBoundaryImport = true;
-                    // 检查导入的 Boundary 名称
-                    const boundarySpecifier = node.specifiers.find(spec =>
-                        (spec.type === 'ImportSpecifier' && spec.imported.name === boundaryComponent)
-            || (spec.type === 'ImportDefaultSpecifier')
-                    );
-                    if (boundarySpecifier) {
-                        boundaryImportName = boundarySpecifier.local.name;
-                    }
+                    // 检查导入的边界组件名称
+                    node.specifiers.forEach(spec => {
+                        if (spec.type === 'ImportSpecifier') {
+                            // 检查是否导入了配置的边界组件之一
+                            if (boundaryComponents.includes(spec.imported.name)) {
+                                boundaryImportNames.add(spec.local.name);
+                            }
+                        } else if (spec.type === 'ImportDefaultSpecifier') {
+                            // 默认导入，假设是边界组件
+                            boundaryImportNames.add(spec.local.name);
+                        }
+                    });
                 }
             },
 
@@ -296,12 +314,14 @@ const rule = {
 
                 exportedComponents.forEach(component => {
                     if (!isWrappedWithBoundary(component.node)) {
+                        // 选择第一个配置的边界组件作为建议
+                        const suggestedBoundary = boundaryComponents[0];
                         context.report({
                             node: component.node,
                             messageId: 'missingBoundary',
                             data: {
                                 componentName: component.name,
-                                boundaryComponent: boundaryImportName,
+                                boundaryComponent: suggestedBoundary,
                             },
                             // TODO: 实现 auto-fix 功能
                             // fix(fixer) {

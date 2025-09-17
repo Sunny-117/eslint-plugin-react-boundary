@@ -343,5 +343,87 @@ ruleTester.run('require-boundary', rule, {
     invalid,
 });
 
+// Test array configuration
+const arrayConfigRuleTester = new RuleTester({
+    languageOptions: {
+        ecmaVersion: 2018,
+        sourceType: 'module',
+        parserOptions: {
+            ecmaFeatures: {
+                jsx: true,
+            },
+        },
+    },
+});
+
+// Test cases for array configuration
+const arrayConfigValid = [
+    // Component wrapped with first boundary option
+    {
+        code: `
+      import { Boundary } from '@/components/ErrorBoundary';
+
+      export function MyComponent() {
+        return (
+          <Boundary>
+            <div>Hello World</div>
+          </Boundary>
+        );
+      }
+    `,
+        options: [{
+            boundaryComponent: ['Boundary', 'ErrorBoundary'],
+            importSource: '@/components/ErrorBoundary'
+        }],
+    },
+
+    // Component wrapped with second boundary option
+    {
+        code: `
+      import { ErrorBoundary } from '@/components/ErrorBoundary';
+
+      export function MyComponent() {
+        return (
+          <ErrorBoundary>
+            <div>Hello World</div>
+          </ErrorBoundary>
+        );
+      }
+    `,
+        options: [{
+            boundaryComponent: ['Boundary', 'ErrorBoundary'],
+            importSource: '@/components/ErrorBoundary'
+        }],
+    },
+];
+
+const arrayConfigInvalid = [
+    // Component without boundary wrapper
+    {
+        code: `
+      export function MyComponent() {
+        return <div>Hello World</div>;
+      }
+    `,
+        options: [{
+            boundaryComponent: ['Boundary', 'ErrorBoundary'],
+            importSource: '@/components/ErrorBoundary'
+        }],
+        errors: [{
+            messageId: 'missingBoundary',
+            data: {
+                componentName: 'MyComponent',
+                boundaryComponent: 'Boundary', // First option is used in error message
+            },
+        }],
+    },
+];
+
+// Run array configuration tests
+arrayConfigRuleTester.run('require-boundary (array config)', rule, {
+    valid: arrayConfigValid,
+    invalid: arrayConfigInvalid,
+});
+
 // eslint-disable-next-line no-console
 console.log('All tests passed!');
