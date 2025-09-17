@@ -23,7 +23,7 @@ async function testWithBoundaryRule() {
                     },
                 },
                 plugins: {
-                    'react-boundary': require('./index'),
+                    'react-boundary': require('../index'),
                 },
                 rules: {
                     'react-boundary/require-with-boundary': ['error', {
