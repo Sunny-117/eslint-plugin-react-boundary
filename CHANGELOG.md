@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.0.6
+
+[compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.5...v0.0.6)
+
+### 🚀 Enhancements
+
+- 🎸 require-with-boundary ([87e6686](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/87e6686))
+
+### 💅 Refactors
+
+- 💡 test cases ([5a0e407](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/5a0e407))
+
+### ❤️ Contributors
+
+- Sunny-117 <zhiqiangfu6@gmail.com>
+
 ## v0.0.5
 
 [compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.4...v0.0.5)
