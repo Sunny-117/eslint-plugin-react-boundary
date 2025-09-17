@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.7
+
+[compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.6...v0.0.7)
+
+### 📖 Documentation
+
+- ✏️ update readme rules motivation ([0052e5f](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/0052e5f))
+
+### ❤️ Contributors
+
+- Sunny-117 <zhiqiangfu6@gmail.com>
+
 ## v0.0.6
 
 [compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.5...v0.0.6)
