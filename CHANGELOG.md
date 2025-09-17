@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.8
+
+[compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.7...v0.0.8)
+
+### 🚀 Enhancements
+
+- 🎸 autofix require-with-boundary ([cbe911d](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/cbe911d))
+
+### ❤️ Contributors
+
+- Sunny-117 <zhiqiangfu6@gmail.com>
+
 ## v0.0.7
 
 [compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.6...v0.0.7)
