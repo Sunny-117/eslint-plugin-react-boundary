@@ -464,6 +464,103 @@ const withBoundaryRule = {
             return false;
         }
 
+        // 生成自动修复
+        function generateAutoFix(fixer, component, withBoundaryFunction, importSource) {
+            const fixes = [];
+            const sourceCode = context.getSourceCode();
+
+            // 检查是否已经有 withBoundary 的导入
+            let hasWithBoundaryImport = false;
+            const program = sourceCode.ast;
+
+            for (const statement of program.body) {
+                if (statement.type === 'ImportDeclaration' && statement.source.value === importSource) {
+                    // 检查是否已经导入了 withBoundary
+                    const hasWithBoundary = statement.specifiers.some(spec =>
+                        (spec.type === 'ImportSpecifier' && spec.imported.name === withBoundaryFunction) ||
+                        (spec.type === 'ImportDefaultSpecifier' && withBoundaryFunction === 'default')
+                    );
+
+                    if (!hasWithBoundary) {
+                        // 添加到现有的导入中
+                        const lastSpecifier = statement.specifiers[statement.specifiers.length - 1];
+                        fixes.push(fixer.insertTextAfter(lastSpecifier, `, ${withBoundaryFunction}`));
+                    }
+                    hasWithBoundaryImport = true;
+                    break;
+                }
+            }
+
+            // 如果没有找到导入，添加新的导入语句
+            if (!hasWithBoundaryImport) {
+                const firstImport = program.body.find(node => node.type === 'ImportDeclaration');
+                const importStatement = `import { ${withBoundaryFunction} } from '${importSource}';\n`;
+
+                if (firstImport) {
+                    fixes.push(fixer.insertTextBefore(firstImport, importStatement));
+                } else {
+                    fixes.push(fixer.insertTextBefore(program.body[0], importStatement));
+                }
+            }
+
+            // 修复导出语句
+            if (component.exportType === 'direct') {
+                // 直接导出的情况，如 export default function Component() {}
+                if (component.node.type === 'ExportDefaultDeclaration') {
+                    if (component.node.declaration.type === 'FunctionDeclaration') {
+                        // export default function Component() {} -> function Component() {} export default withBoundary(Component);
+                        const funcDeclaration = component.node.declaration;
+                        const componentName = funcDeclaration.id.name;
+
+                        // 移除 export default，只保留函数声明
+                        fixes.push(fixer.replaceText(component.node, sourceCode.getText(funcDeclaration)));
+
+                        // 在文件末尾添加新的导出
+                        fixes.push(fixer.insertTextAfter(component.node, `\n\nexport default ${withBoundaryFunction}(${componentName});`));
+                    } else if (component.node.declaration.type === 'Identifier') {
+                        // export default Component -> export default withBoundary(Component)
+                        const componentName = component.node.declaration.name;
+                        fixes.push(fixer.replaceText(component.node.declaration, `${withBoundaryFunction}(${componentName})`));
+                    }
+                } else if (component.node.type === 'ExportNamedDeclaration') {
+                    if (component.node.declaration) {
+                        // export function Component() {} -> function Component() {} export { withBoundary(Component) as Component };
+                        if (component.node.declaration.type === 'FunctionDeclaration') {
+                            const funcDeclaration = component.node.declaration;
+                            const componentName = funcDeclaration.id.name;
+
+                            fixes.push(fixer.replaceText(component.node, sourceCode.getText(funcDeclaration)));
+                            fixes.push(fixer.insertTextAfter(component.node, `\n\nconst Wrapped${componentName} = ${withBoundaryFunction}(${componentName});\nexport { Wrapped${componentName} as ${componentName} };`));
+                        }
+                    }
+                }
+            } else if (component.exportType === 'reference') {
+                // 引用导出的情况，如 export { Component } 或 export default Component
+                if (component.node.type === 'ExportDefaultDeclaration' && component.node.declaration.type === 'Identifier') {
+                    // export default Component -> export default withBoundary(Component)
+                    const componentName = component.node.declaration.name;
+                    fixes.push(fixer.replaceText(component.node.declaration, `${withBoundaryFunction}(${componentName})`));
+                } else if (component.node.type === 'ExportNamedDeclaration' && component.node.specifiers) {
+                    const specifier = component.node.specifiers.find(spec =>
+                        spec.type === 'ExportSpecifier' && spec.exported.name === component.name
+                    );
+
+                    if (specifier) {
+                        const localName = specifier.local.name;
+                        const exportedName = specifier.exported.name;
+
+                        // 在导出之前添加包装的变量声明
+                        fixes.push(fixer.insertTextBefore(component.node, `const Wrapped${exportedName} = ${withBoundaryFunction}(${localName});\n`));
+
+                        // 修改导出引用
+                        fixes.push(fixer.replaceText(specifier, `Wrapped${exportedName} as ${exportedName}`));
+                    }
+                }
+            }
+
+            return fixes;
+        }
+
         return {
             // 检查 import 语句
             ImportDeclaration(node) {
@@ -630,6 +727,9 @@ const withBoundaryRule = {
                             componentName: component.name,
                             withBoundaryFunction: withBoundaryFunction,
                         },
+                        fix(fixer) {
+                            return generateAutoFix(fixer, component, withBoundaryFunction, importSource);
+                        }
                     });
                 });
             },

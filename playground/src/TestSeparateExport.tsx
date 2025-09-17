@@ -1,11 +1,10 @@
-import { Boundary } from 'react-suspense-boundary';
 
 // Test case 1: Function defined first, then default export (with Boundary)
 function GoodComponent() {
   return (
-    <Boundary>
+    <>
       <div>This should pass</div>
-    </Boundary>
+    </>
   );
 }
 

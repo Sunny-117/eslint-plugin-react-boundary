@@ -24,7 +24,7 @@ export default tseslint.config([
       "react-boundary": reactBoundary // ✅ 对象形式
     },
     rules: {
-      "react-boundary/require-boundary": "error"
+      "react-boundary/require-with-boundary": "error"
     },
   },
 ])
