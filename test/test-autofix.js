@@ -91,6 +91,24 @@ export default MyComponent;
             `.trim(),
             expectedPattern: /import.*withBoundary.*from 'react-suspense-boundary'/,
         },
+        {
+            name: 'Default export anonymous arrow function - should be fixed',
+            input: `
+export default () => {
+  return <div>Anon</div>;
+}
+            `.trim(),
+            expectedPattern: /export default\s*withBoundary\(\(\)\s*=>/,
+        },
+        {
+            name: 'Default export anonymous function declaration - should be fixed',
+            input: `
+export default function() {
+  return <div>AnonFn</div>;
+}
+            `.trim(),
+            expectedPattern: /export default\s*withBoundary\(function\(\)/,
+        },
     ];
 
     let allTestsPassed = true;
