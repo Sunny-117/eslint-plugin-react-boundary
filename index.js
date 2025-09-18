@@ -79,7 +79,9 @@ const rule = {
 
             // 函数声明: function Component() {}
             if (node.type === 'FunctionDeclaration') {
-                return isComponentName(node.id?.name) && hasJSXReturn(node.body);
+                // 支持匿名函数声明（如 export default function() {}）
+                const isAnonymous = !node.id;
+                return (isAnonymous || isComponentName(node.id?.name)) && hasJSXReturn(node.body);
             }
 
             // 箭头函数: const Component = () => {}
@@ -279,11 +281,11 @@ const rule = {
                 let componentNode = null;
                 let componentName = 'default';
 
-                if (node.declaration.type === 'FunctionDeclaration') {
-                    componentNode = node.declaration;
-                    componentName = node.declaration.id?.name || 'default';
-                } else if (node.declaration.type === 'ArrowFunctionExpression'
-                   || node.declaration.type === 'FunctionExpression') {
+            if (node.declaration.type === 'FunctionDeclaration') {
+                componentNode = node.declaration;
+                componentName = node.declaration.id?.name || 'default';
+            } else if (node.declaration.type === 'ArrowFunctionExpression'
+               || node.declaration.type === 'FunctionExpression') {
                     componentNode = node.declaration;
                 } else if (node.declaration.type === 'Identifier') {
                     // export default Component (引用已定义的组件)
@@ -394,7 +396,8 @@ const withBoundaryRule = {
 
             // 函数声明: function Component() {}
             if (node.type === 'FunctionDeclaration') {
-                return isComponentName(node.id?.name) && hasJSXReturn(node.body);
+                const isAnonymous = !node.id;
+                return (isAnonymous || isComponentName(node.id?.name)) && hasJSXReturn(node.body);
             }
 
             // 箭头函数: const Component = () => {}
@@ -507,20 +510,28 @@ const withBoundaryRule = {
             if (component.exportType === 'direct') {
                 // 直接导出的情况，如 export default function Component() {}
                 if (component.node.type === 'ExportDefaultDeclaration') {
-                    if (component.node.declaration.type === 'FunctionDeclaration') {
-                        // export default function Component() {} -> function Component() {} export default withBoundary(Component);
-                        const funcDeclaration = component.node.declaration;
-                        const componentName = funcDeclaration.id.name;
-
-                        // 移除 export default，只保留函数声明
-                        fixes.push(fixer.replaceText(component.node, sourceCode.getText(funcDeclaration)));
-
-                        // 在文件末尾添加新的导出
-                        fixes.push(fixer.insertTextAfter(component.node, `\n\nexport default ${withBoundaryFunction}(${componentName});`));
-                    } else if (component.node.declaration.type === 'Identifier') {
+                    const decl = component.node.declaration;
+                    if (decl.type === 'FunctionDeclaration') {
+                        // 具名函数声明与匿名函数声明分别处理
+                        if (decl.id && decl.id.name) {
+                            // export default function Component() {} -> function Component() {} export default withBoundary(Component);
+                            const funcDeclaration = decl;
+                            const componentName = funcDeclaration.id.name;
+                            fixes.push(fixer.replaceText(component.node, sourceCode.getText(funcDeclaration)));
+                            fixes.push(fixer.insertTextAfter(component.node, `\n\nexport default ${withBoundaryFunction}(${componentName});`));
+                        } else {
+                            // 匿名函数声明：export default function() {} -> export default withBoundary(function() {})
+                            const original = sourceCode.getText(decl);
+                            fixes.push(fixer.replaceText(decl, `${withBoundaryFunction}(${original})`));
+                        }
+                    } else if (decl.type === 'ArrowFunctionExpression' || decl.type === 'FunctionExpression') {
+                        // export default () => {} / export default function() {} (表达式形式)
+                        const original = sourceCode.getText(decl);
+                        fixes.push(fixer.replaceText(decl, `${withBoundaryFunction}(${original})`));
+                    } else if (decl.type === 'Identifier') {
                         // export default Component -> export default withBoundary(Component)
-                        const componentName = component.node.declaration.name;
-                        fixes.push(fixer.replaceText(component.node.declaration, `${withBoundaryFunction}(${componentName})`));
+                        const componentName = decl.name;
+                        fixes.push(fixer.replaceText(decl, `${withBoundaryFunction}(${componentName})`));
                     }
                 } else if (component.node.type === 'ExportNamedDeclaration') {
                     if (component.node.declaration) {
