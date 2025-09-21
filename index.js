@@ -373,6 +373,10 @@ const withBoundaryRule = {
                             },
                         ],
                     },
+                    enableHOCDetection: {
+                        type: 'boolean',
+                        default: true,
+                    },
                 },
                 additionalProperties: false,
             },
@@ -391,6 +395,9 @@ const withBoundaryRule = {
         // 支持边界组件配置（用于检查特殊情况）
         const boundaryComponentConfig = options.boundaryComponent || 'Boundary';
         const boundaryComponents = Array.isArray(boundaryComponentConfig) ? boundaryComponentConfig : [boundaryComponentConfig];
+
+        // HOC 检测配置
+        const enableHOCDetection = options.enableHOCDetection !== false; // 默认启用
 
         let hasReactImport = false;
         let hasWithBoundaryImport = false;
@@ -464,7 +471,11 @@ const withBoundaryRule = {
 
         // 检查节点是否是组件（包括普通组件和 HOC 包装的组件）
         function isComponent(node) {
-            return isFunctionComponent(node) || isReactHOCComponent(node);
+            if (isFunctionComponent(node)) {
+                return true;
+            }
+            // 只有在启用 HOC 检测时才检查 HOC 组件
+            return enableHOCDetection && isReactHOCComponent(node);
         }
 
         // 检查组件是否已经被边界组件包装（用于 withBoundary 规则的特殊情况）
@@ -624,7 +635,7 @@ const withBoundaryRule = {
                         // export default Component -> export default withBoundary(Component)
                         const componentName = decl.name;
                         fixes.push(fixer.replaceText(decl, `${withBoundaryFunction}(${componentName})`));
-                    } else if (decl.type === 'CallExpression' && isReactHOCComponent(decl)) {
+                    } else if (enableHOCDetection && decl.type === 'CallExpression' && isReactHOCComponent(decl)) {
                         // export default forwardRef(...) -> export default withBoundary(forwardRef(...))
                         const original = sourceCode.getText(decl);
                         fixes.push(fixer.replaceText(decl, `${withBoundaryFunction}(${original})`));
@@ -807,7 +818,7 @@ const withBoundaryRule = {
                     if (isWrappedWithBoundary(node.declaration)) {
                         // 这是正确的导出方式，不需要报错
                         return;
-                    } else if (isReactHOCComponent(node.declaration)) {
+                    } else if (enableHOCDetection && isReactHOCComponent(node.declaration)) {
                         // export default forwardRef(...) - 这是直接导出 HOC 组件
                         componentNode = node.declaration;
                         componentName = 'default';

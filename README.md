@@ -156,9 +156,12 @@ The `withBoundary()` HOC provides additional error handling at the component lev
 
 - `withBoundaryFunction` (string): The name of the HOC function. Default: `"withBoundary"`
 - `importSource` (string): The module from which the HOC should be imported. Default: `"react-suspense-boundary"`
+- `boundaryComponent` (string | string[]): Boundary component name(s) for special case detection. Default: `"Boundary"`
+- `enableHOCDetection` (boolean): Whether to detect and validate React HOC components (forwardRef, memo, lazy, etc.). Default: `true`
 
-#### Configuration Example
+#### Configuration Examples
 
+**Basic Configuration:**
 ```json
 {
   "rules": {
@@ -171,6 +174,86 @@ The `withBoundary()` HOC provides additional error handling at the component lev
     ]
   }
 }
+```
+
+**Advanced Configuration:**
+```json
+{
+  "rules": {
+    "react-boundary/require-with-boundary": [
+      "error",
+      {
+        "withBoundaryFunction": "withBoundary",
+        "importSource": "react-suspense-boundary",
+        "boundaryComponent": ["Boundary", "ErrorBoundary"],
+        "enableHOCDetection": true
+      }
+    ]
+  }
+}
+```
+
+**Disable HOC Detection:**
+```json
+{
+  "rules": {
+    "react-boundary/require-with-boundary": [
+      "error",
+      {
+        "withBoundaryFunction": "withBoundary",
+        "importSource": "react-suspense-boundary",
+        "enableHOCDetection": false
+      }
+    ]
+  }
+}
+```
+
+#### HOC Detection
+
+When `enableHOCDetection` is `true` (default), the rule will also validate React Higher-Order Components:
+
+- `React.forwardRef()` / `forwardRef()`
+- `React.memo()` / `memo()`
+- `React.lazy()` / `lazy()`
+- Nested HOCs like `memo(forwardRef(...))`
+
+**❌ HOC Examples (when enableHOCDetection: true):**
+```jsx
+import React, { forwardRef, memo, lazy } from 'react';
+
+// forwardRef without withBoundary - not allowed
+export default forwardRef((props, ref) => {
+  return <div ref={ref}>Component</div>;
+});
+
+// memo without withBoundary - not allowed
+export const MemoComponent = memo(() => {
+  return <div>Memoized</div>;
+});
+
+// lazy without withBoundary - not allowed
+export default lazy(() => import('./Component'));
+```
+
+**✅ HOC Examples (corrected):**
+```jsx
+import React, { forwardRef, memo, lazy } from 'react';
+import { withBoundary } from 'react-suspense-boundary';
+
+// forwardRef with withBoundary
+export default withBoundary(forwardRef((props, ref) => {
+  return <div ref={ref}>Component</div>;
+}));
+
+// memo with withBoundary
+const MemoComponent = memo(() => {
+  return <div>Memoized</div>;
+});
+export const WrappedMemoComponent = withBoundary(MemoComponent);
+
+// lazy with withBoundary
+export default withBoundary(lazy(() => import('./Component')));
 ```
 
 #### Examples
