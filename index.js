@@ -358,6 +358,21 @@ const withBoundaryRule = {
                         type: 'string',
                         default: 'react-suspense-boundary',
                     },
+                    boundaryComponent: {
+                        oneOf: [
+                            {
+                                type: 'string',
+                                default: 'Boundary',
+                            },
+                            {
+                                type: 'array',
+                                items: {
+                                    type: 'string',
+                                },
+                                minItems: 1,
+                            },
+                        ],
+                    },
                 },
                 additionalProperties: false,
             },
@@ -372,6 +387,10 @@ const withBoundaryRule = {
         const options = context.options[0] || {};
         const withBoundaryFunction = options.withBoundaryFunction || 'withBoundary';
         const importSource = options.importSource || 'react-suspense-boundary';
+
+        // 支持边界组件配置（用于检查特殊情况）
+        const boundaryComponentConfig = options.boundaryComponent || 'Boundary';
+        const boundaryComponents = Array.isArray(boundaryComponentConfig) ? boundaryComponentConfig : [boundaryComponentConfig];
 
         let hasReactImport = false;
         let hasWithBoundaryImport = false;
@@ -446,6 +465,41 @@ const withBoundaryRule = {
         // 检查节点是否是组件（包括普通组件和 HOC 包装的组件）
         function isComponent(node) {
             return isFunctionComponent(node) || isReactHOCComponent(node);
+        }
+
+        // 检查组件是否已经被边界组件包装（用于 withBoundary 规则的特殊情况）
+        function isComponentWrappedWithBoundaryElement(node) {
+            if (!node || !isFunctionComponent(node)) {
+                return false;
+            }
+
+            // 检查函数体是否只有一个 return 语句且返回被边界组件包装的 JSX
+            const body = node.body;
+
+            if (body && body.type === 'BlockStatement') {
+                // 函数体必须只有一个语句，且必须是 return 语句
+                if (body.body.length !== 1) {
+                    return false;
+                }
+
+                const singleStatement = body.body[0];
+                if (singleStatement.type !== 'ReturnStatement') {
+                    return false;
+                }
+
+                const returnArg = singleStatement.argument;
+                if (returnArg && returnArg.type === 'JSXElement') {
+                    // 检查返回的 JSX 元素是否是边界组件
+                    const elementName = returnArg.openingElement.name;
+
+                    if (elementName.type === 'JSXIdentifier') {
+                        // 检查是否是配置的边界组件之一
+                        return boundaryComponents.includes(elementName.name);
+                    }
+                }
+            }
+
+            return false;
         }
 
         // 检查是否是组件名称（首字母大写）
@@ -776,6 +830,12 @@ const withBoundaryRule = {
                 if (!isReactFile() || exportedComponents.length === 0) {return;}
 
                 exportedComponents.forEach(component => {
+                    // 检查特殊情况：组件已经被边界组件包装
+                    if (isComponentWrappedWithBoundaryElement(component.componentNode)) {
+                        // 这种情况下不需要 withBoundary，因为组件内部已经有边界包装
+                        return;
+                    }
+
                     // 对于这个规则，我们检查导出是否使用了 withBoundary 包装
                     // 如果是直接导出组件，就报错
                     context.report({
