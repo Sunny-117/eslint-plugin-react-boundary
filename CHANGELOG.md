@@ -1,6 +1,21 @@
 # Changelog
 
 
+## v0.0.9
+
+[compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.8...v0.0.9)
+
+### 🚀 Enhancements
+
+- 🎸 Default export anonymous function declaration fixed ([71c9452](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/71c9452))
+- 🎸 React HOC components with require-with-boundary rule ([ef93641](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/ef93641))
+- 🎸 pure Wrapper not error ([2dfdb18](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/2dfdb18))
+- 🎸 hoc configurable ([368bc28](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/368bc28))
+
+### ❤️ Contributors
+
+- Sunny-117 <zhiqiangfu6@gmail.com>
+
 ## v0.0.8
 
 [compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.7...v0.0.8)
