@@ -410,6 +410,44 @@ const withBoundaryRule = {
             return false;
         }
 
+        // 检查节点是否是被 React 高阶函数包装的组件
+        function isReactHOCComponent(node) {
+            if (!node || node.type !== 'CallExpression') {
+                return false;
+            }
+
+            const callee = node.callee;
+
+            // 检查是否是 React.forwardRef, React.memo 等
+            if (callee.type === 'MemberExpression') {
+                const object = callee.object;
+                const property = callee.property;
+
+                if (object.name === 'React' &&
+                    (property.name === 'forwardRef' ||
+                     property.name === 'memo' ||
+                     property.name === 'lazy')) {
+                    return true;
+                }
+            }
+
+            // 检查是否是直接导入的 forwardRef, memo 等
+            if (callee.type === 'Identifier') {
+                if (callee.name === 'forwardRef' ||
+                    callee.name === 'memo' ||
+                    callee.name === 'lazy') {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // 检查节点是否是组件（包括普通组件和 HOC 包装的组件）
+        function isComponent(node) {
+            return isFunctionComponent(node) || isReactHOCComponent(node);
+        }
+
         // 检查是否是组件名称（首字母大写）
         function isComponentName(name) {
             return name && /^[A-Z]/.test(name);
@@ -532,6 +570,10 @@ const withBoundaryRule = {
                         // export default Component -> export default withBoundary(Component)
                         const componentName = decl.name;
                         fixes.push(fixer.replaceText(decl, `${withBoundaryFunction}(${componentName})`));
+                    } else if (decl.type === 'CallExpression' && isReactHOCComponent(decl)) {
+                        // export default forwardRef(...) -> export default withBoundary(forwardRef(...))
+                        const original = sourceCode.getText(decl);
+                        fixes.push(fixer.replaceText(decl, `${withBoundaryFunction}(${original})`));
                     }
                 } else if (component.node.type === 'ExportNamedDeclaration') {
                     if (component.node.declaration) {
@@ -604,8 +646,8 @@ const withBoundaryRule = {
 
                 node.declarations.forEach(declarator => {
                     if (declarator.id.name && isComponentName(declarator.id.name)) {
-                        if (isFunctionComponent(declarator.init)) {
-                            // 这是一个组件定义
+                        if (isComponent(declarator.init)) {
+                            // 这是一个组件定义（包括普通组件和 HOC 包装的组件）
                             definedComponents.set(declarator.id.name, {
                                 name: declarator.id.name,
                                 node: declarator.init,
@@ -645,7 +687,7 @@ const withBoundaryRule = {
                     } else if (node.declaration.type === 'VariableDeclaration') {
                         node.declaration.declarations.forEach(declarator => {
                             if (declarator.id.name && isComponentName(declarator.id.name)
-                  && isFunctionComponent(declarator.init)) {
+                  && isComponent(declarator.init)) {
                                 exportedComponents.push({
                                     name: declarator.id.name,
                                     node: node,
@@ -711,10 +753,15 @@ const withBoundaryRule = {
                     if (isWrappedWithBoundary(node.declaration)) {
                         // 这是正确的导出方式，不需要报错
                         return;
+                    } else if (isReactHOCComponent(node.declaration)) {
+                        // export default forwardRef(...) - 这是直接导出 HOC 组件
+                        componentNode = node.declaration;
+                        componentName = 'default';
+                        exportType = 'direct';
                     }
                 }
 
-                if (componentNode && isFunctionComponent(componentNode)) {
+                if (componentNode && isComponent(componentNode)) {
                     exportedComponents.push({
                         name: componentName,
                         node: node,

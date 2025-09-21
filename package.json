@@ -4,13 +4,15 @@
   "description": "ESLint plugin to ensure React components are wrapped with Boundary",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test-plugin && npm run test-cases && npm run test-separate && npm run test-array && npm run test-with-boundary && npm run test-autofix",
+    "test": "npm run test-plugin && npm run test-cases && npm run test-separate && npm run test-array && npm run test-with-boundary && npm run test-autofix && npm run test-hoc && npm run test-hoc-autofix",
     "test-plugin": "node test/test-plugin.js",
     "test-cases": "node test/test-cases.js",
     "test-separate": "node test/test-separate-export.js",
     "test-array": "node test/test-array-config.js",
     "test-with-boundary": "node test/test-with-boundary.js",
     "test-autofix": "node test/test-autofix.js",
+    "test-hoc": "node test/test-hoc-components.js",
+    "test-hoc-autofix": "node test/test-hoc-autofix.js",
     "commit": "git-cz",
     "release": "changelogen --release && npm publish"
   },
