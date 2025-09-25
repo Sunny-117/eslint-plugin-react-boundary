@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "eslint-plugin-react-boundary": "link:..",
+    "eslint-plugin-react-boundary": "workspace:*",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-suspense-boundary": "^3.0.0"
