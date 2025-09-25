@@ -649,6 +649,19 @@ const withBoundaryRule = {
 
                             fixes.push(fixer.replaceText(component.node, sourceCode.getText(funcDeclaration)));
                             fixes.push(fixer.insertTextAfter(component.node, `\n\nconst Wrapped${componentName} = ${withBoundaryFunction}(${componentName});\nexport { Wrapped${componentName} as ${componentName} };`));
+                        } else if (component.node.declaration.type === 'VariableDeclaration') {
+                            // export const Component = () => {} -> const Component = () => {} export { withBoundary(Component) as Component };
+                            const varDeclaration = component.node.declaration;
+                            const declarator = varDeclaration.declarations.find(dec => 
+                                dec.id.name === component.name
+                            );
+                            
+                            if (declarator) {
+                                const componentName = declarator.id.name;
+                                
+                                fixes.push(fixer.replaceText(component.node, sourceCode.getText(varDeclaration)));
+                                fixes.push(fixer.insertTextAfter(component.node, `\n\nconst Wrapped${componentName} = ${withBoundaryFunction}(${componentName});\nexport { Wrapped${componentName} as ${componentName} };`));
+                            }
                         }
                     }
                 }

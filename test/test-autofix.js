@@ -109,6 +109,15 @@ export default function() {
             `.trim(),
             expectedPattern: /export default\s*withBoundary\(function\(\)/,
         },
+        {
+            name: 'export const arrow function - should be fixed',
+            input: `
+export const AiBuildPreviewComp = props => {
+  return <div>Anon</div>;
+}
+            `.trim(),
+            expectedPattern: /withBoundary\(AiBuildPreviewComp\)/,
+        },
     ];
 
     let allTestsPassed = true;
