@@ -4,6 +4,15 @@
 
 const {ESLint} = require('eslint');
 
+// Try to load TypeScript parser, but don't fail if it's not available
+let tsParser = null;
+try {
+    tsParser = require('@typescript-eslint/parser');
+    console.log('✅ TypeScript parser loaded successfully');
+} catch (e) {
+    console.warn('⚠️ @typescript-eslint/parser not found, attempting to use ESLint default parser');
+}
+
 async function testGenericAutofix() {
     console.log('🧪 Testing autofix functionality for TypeScript generic components...\n');
 
@@ -16,6 +25,7 @@ async function testGenericAutofix() {
                 languageOptions: {
                     ecmaVersion: 2020,
                     sourceType: 'module',
+                    ...(tsParser && { parser: tsParser }),
                     parserOptions: {
                         ecmaFeatures: {
                             jsx: true,
@@ -37,8 +47,6 @@ async function testGenericAutofix() {
     });
 
     // Test cases for autofix with generic components
-    // Note: We'll test the actual functionality using the playground files
-    // since these tests need TypeScript parsing which isn't available in this test environment
     const testCases = [
         {
             name: 'Playground Test - Check if generic autofix works',
@@ -48,6 +56,15 @@ export function TestGeneric(props) {
 }
             `.trim(),
             expectedPattern: /withBoundary\(TestGeneric\)/,
+        },
+        {
+            name: 'Generic component with constraints - should add type assertion',
+            input: `
+export function ConstrainedGeneric<T extends object>(props: { value: T }) {
+  return <div>{JSON.stringify(props.value)}</div>;
+}
+            `.trim(),
+            expectedPattern: /withBoundary\(ConstrainedGeneric\) as typeof ConstrainedGeneric/,
         },
     ];
 
@@ -68,7 +85,6 @@ export function TestGeneric(props) {
                 console.log('   ' + testCase.input.split('\n').join('\n   '));
                 console.log('   Fixed code:');
                 console.log('   ' + fixedCode.split('\n').join('\n   '));
-                console.log({fixedCode}, 'fixedCode')
                 // Check if the expected pattern is in the fixed code
                 if (testCase.expectedPattern.test(fixedCode)) {
                     console.log('   ✓ Expected pattern found in fixed code');
