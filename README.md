@@ -1,5 +1,11 @@
 # eslint-plugin-react-boundary
 
+[![npm version][npm-version-src]][npm-version-href]
+[![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![bundle][bundle-src]][bundle-href]
+[![JSDocs][jsdocs-src]][jsdocs-href]
+[![License][license-src]][license-href]
+
 ESLint plugin to ensure React components are properly wrapped with error boundaries for better error handling and application stability.
 
 ## Why Error Boundaries Matter
@@ -403,6 +409,20 @@ eslint-plugin-react-boundary/
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+
 ## License
 
-MIT
+[MIT](./LICENSE) License © [Sunny-117](https://github.com/Sunny-117)
+
+<!-- Badges -->
+
+[npm-version-src]: https://img.shields.io/npm/v/eslint-plugin-react-boundary?style=flat&colorA=080f12&colorB=1fa669
+[npm-version-href]: https://npmjs.com/package/eslint-plugin-react-boundary
+[npm-downloads-src]: https://img.shields.io/npm/dm/eslint-plugin-react-boundary?style=flat&colorA=080f12&colorB=1fa669
+[npm-downloads-href]: https://npmjs.com/package/eslint-plugin-react-boundary
+[bundle-src]: https://img.shields.io/bundlephobia/minzip/eslint-plugin-react-boundary?style=flat&colorA=080f12&colorB=1fa669&label=minzip
+[bundle-href]: https://bundlephobia.com/result?p=eslint-plugin-react-boundary
+[license-src]: https://img.shields.io/github/license/Sunny-117/eslint-plugin-react-boundary.svg?style=flat&colorA=080f12&colorB=1fa669
+[license-href]: https://github.com/Sunny-117/eslint-plugin-react-boundary/blob/main/LICENSE
+[jsdocs-src]: https://img.shields.io/badge/jsdocs-reference-080f12?style=flat&colorA=080f12&colorB=1fa669
+[jsdocs-href]: https://www.jsdocs.io/package/eslint-plugin-react-boundary
