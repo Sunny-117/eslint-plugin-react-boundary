@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.0.10
+
+[compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.10...v0.0.10)
+
+### 🚀 Enhancements
+
+- 🎸 generic autofix ([f94e26b](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/f94e26b))
+
+### 🩹 Fixes
+
+- 🐛 path ([b0d0e3a](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/b0d0e3a))
+
+### ✅ Tests
+
+- 💍 test cases ([95960d0](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/95960d0))
+
+### ❤️ Contributors
+
+- Sunny-117 <zhiqiangfu6@gmail.com>
+
 ## v0.0.9
 
 [compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.8...v0.0.9)
