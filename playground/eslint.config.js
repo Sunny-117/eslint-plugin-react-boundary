@@ -24,7 +24,14 @@ export default tseslint.config([
       "react-boundary": reactBoundary // ✅ 对象形式
     },
     rules: {
-      "react-boundary/require-with-boundary": "error"
+      "react-boundary/require-with-boundary": ['error', {
+            withBoundaryFunction: 'withBoundary',
+            importSource: '@/ErrorBoundary',
+            boundaryComponent: ['Boundary', 'ErrorBoundary'],
+            // 暂时不开启HOC判断，测试功能稳定后开启
+            enableHOCDetection: false,
+        }],
+      "react-refresh/only-export-components": "off"
     },
   },
 ])

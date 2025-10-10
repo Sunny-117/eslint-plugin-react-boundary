@@ -518,6 +518,18 @@ const withBoundaryRule = {
             return name && /^[A-Z]/.test(name);
         }
 
+        // 检查函数是否有泛型参数
+        function hasGenericParameters(node) {
+            if (!node) return false;
+
+            // 检查 TypeScript 函数声明的 typeParameters
+            if (node.typeParameters && node.typeParameters.params && node.typeParameters.params.length > 0) {
+                return true;
+            }
+
+            return false;
+        }
+
         // 检查函数体是否返回 JSX
         function hasJSXReturn(body) {
             if (!body) {return false;}
@@ -647,8 +659,16 @@ const withBoundaryRule = {
                             const funcDeclaration = component.node.declaration;
                             const componentName = funcDeclaration.id.name;
 
+                            // 检查是否有泛型参数，如果有则添加类型断言
+                            const hasGenerics = hasGenericParameters(funcDeclaration);
+                            const typeAssertion = hasGenerics ? ` as typeof ${componentName}` : '';
+
+                            // fixes.push(fixer.replaceText(component.node, sourceCode.getText(funcDeclaration)));
+                            // fixes.push(fixer.insertTextAfter(component.node, `\n\nconst Wrapped${componentName} = ${withBoundaryFunction}(${componentName});\nexport { Wrapped${componentName} as ${componentName} };`));
+
+
                             fixes.push(fixer.replaceText(component.node, sourceCode.getText(funcDeclaration)));
-                            fixes.push(fixer.insertTextAfter(component.node, `\n\nconst Wrapped${componentName} = ${withBoundaryFunction}(${componentName});\nexport { Wrapped${componentName} as ${componentName} };`));
+                            fixes.push(fixer.insertTextAfter(component.node, `\n\nconst Wrapped${componentName} = ${withBoundaryFunction}(${componentName})${typeAssertion};\nexport { Wrapped${componentName} as ${componentName} };`));
                         } else if (component.node.declaration.type === 'VariableDeclaration') {
                             // export const Component = () => {} -> const Component = () => {} export { withBoundary(Component) as Component };
                             const varDeclaration = component.node.declaration;
@@ -670,7 +690,13 @@ const withBoundaryRule = {
                 if (component.node.type === 'ExportDefaultDeclaration' && component.node.declaration.type === 'Identifier') {
                     // export default Component -> export default withBoundary(Component)
                     const componentName = component.node.declaration.name;
-                    fixes.push(fixer.replaceText(component.node.declaration, `${withBoundaryFunction}(${componentName})`));
+
+                    // 检查原始组件是否有泛型参数
+                    const originalComponent = definedComponents.get(componentName);
+                    const hasGenerics = originalComponent && hasGenericParameters(originalComponent.node);
+                    const typeAssertion = hasGenerics ? ` as typeof ${componentName}` : '';
+
+                    fixes.push(fixer.replaceText(component.node.declaration, `${withBoundaryFunction}(${componentName})${typeAssertion}`));
                 } else if (component.node.type === 'ExportNamedDeclaration' && component.node.specifiers) {
                     const specifier = component.node.specifiers.find(spec =>
                         spec.type === 'ExportSpecifier' && spec.exported.name === component.name
@@ -680,8 +706,13 @@ const withBoundaryRule = {
                         const localName = specifier.local.name;
                         const exportedName = specifier.exported.name;
 
+                        // 检查原始组件是否有泛型参数
+                        const originalComponent = definedComponents.get(localName);
+                        const hasGenerics = originalComponent && hasGenericParameters(originalComponent.node);
+                        const typeAssertion = hasGenerics ? ` as typeof ${localName}` : '';
+
                         // 在导出之前添加包装的变量声明
-                        fixes.push(fixer.insertTextBefore(component.node, `const Wrapped${exportedName} = ${withBoundaryFunction}(${localName});\n`));
+                        fixes.push(fixer.insertTextBefore(component.node, `const Wrapped${exportedName} = ${withBoundaryFunction}(${localName})${typeAssertion};\n`));
 
                         // 修改导出引用
                         fixes.push(fixer.replaceText(specifier, `Wrapped${exportedName} as ${exportedName}`));
