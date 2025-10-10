@@ -26,7 +26,7 @@ export default tseslint.config([
     rules: {
       "react-boundary/require-with-boundary": ['error', {
             withBoundaryFunction: 'withBoundary',
-            importSource: '@/ErrorBoundary',
+            importSource: './ErrorBoundary',
             boundaryComponent: ['Boundary', 'ErrorBoundary'],
             // 暂时不开启HOC判断，测试功能稳定后开启
             enableHOCDetection: false,

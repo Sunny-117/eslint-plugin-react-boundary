@@ -1,7 +1,7 @@
 // Test to verify that our generic component fixes maintain type safety
 
-import { withBoundary } from 'react-suspense-boundary';
 import React from 'react';
+import { withBoundary } from './ErrorBoundary';
 
 // This is a generic component that should be fixed by our ESLint rule
 function GenericFormEditor<T extends object>(props: {
