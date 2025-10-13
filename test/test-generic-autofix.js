@@ -66,6 +66,34 @@ export function ConstrainedGeneric<T extends object>(props: { value: T }) {
             `.trim(),
             expectedPattern: /withBoundary\(ConstrainedGeneric\) as typeof ConstrainedGeneric/,
         },
+        {
+            name: 'WithDrawerInput component with constraints - should add type assertion - named export',
+            input: `
+type WithDrawerInputProps<T extends Record<string, any>> = {
+    formConfig: number;
+    transForm?: (value: T, props: WithDrawerInputProps<T>) => string;
+};
+
+export function WithDrawerInput<T extends Record<string, any>>(props: WithDrawerInputProps<T>) {
+  return <div>1</div>;
+}
+            `.trim(),
+            expectedPattern: /withBoundary\(WithDrawerInput\) as typeof WithDrawerInput/,
+        },
+        {
+            name: 'WithDrawerInput component with constraints - should add type assertion - default export',
+            input: `
+type WithDrawerInputProps<T extends Record<string, any>> = {
+    formConfig: number;
+    transForm?: (value: T, props: WithDrawerInputProps<T>) => string;
+};
+
+export default function WithDrawerInput<T extends Record<string, any>>(props: WithDrawerInputProps<T>) {
+  return <div>1</div>;
+}
+            `.trim(),
+            expectedPattern: /withBoundary\(WithDrawerInput\) as typeof WithDrawerInput/,
+        },
     ];
 
     let allTestsPassed = true;
