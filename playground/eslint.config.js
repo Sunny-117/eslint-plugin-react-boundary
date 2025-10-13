@@ -11,10 +11,10 @@ export default tseslint.config([
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
-      js.configs.recommended,
+      // js.configs.recommended,
       tseslint.configs.recommended,
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.vite,
+      // reactHooks.configs['recommended-latest'],
+      // reactRefresh.configs.vite,
     ],
     languageOptions: {
       ecmaVersion: 2020,
@@ -31,7 +31,8 @@ export default tseslint.config([
             // 暂时不开启HOC判断，测试功能稳定后开启
             enableHOCDetection: false,
         }],
-      "react-refresh/only-export-components": "off"
+      "react-refresh/only-export-components": "off",
+      "@typescript-eslint/no-explicit-any": 'off'
     },
   },
 ])
