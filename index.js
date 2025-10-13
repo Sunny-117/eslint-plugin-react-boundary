@@ -632,8 +632,13 @@ const withBoundaryRule = {
                             // export default function Component() {} -> function Component() {} export default withBoundary(Component);
                             const funcDeclaration = decl;
                             const componentName = funcDeclaration.id.name;
+
+                            // 检查是否有泛型参数，如果有则添加类型断言
+                            const hasGenerics = hasGenericParameters(funcDeclaration);
+                            const typeAssertion = hasGenerics ? ` as typeof ${componentName}` : '';
+
                             fixes.push(fixer.replaceText(component.node, sourceCode.getText(funcDeclaration)));
-                            fixes.push(fixer.insertTextAfter(component.node, `\n\nexport default ${withBoundaryFunction}(${componentName});`));
+                            fixes.push(fixer.insertTextAfter(component.node, `\n\nexport default ${withBoundaryFunction}(${componentName})${typeAssertion};`));
                         } else {
                             // 匿名函数声明：export default function() {} -> export default withBoundary(function() {})
                             const original = sourceCode.getText(decl);
