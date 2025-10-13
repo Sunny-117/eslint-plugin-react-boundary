@@ -1,6 +1,30 @@
 # Changelog
 
 
+## v0.0.12
+
+[compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.11...v0.0.12)
+
+### 🚀 Enhancements
+
+- Default export generic params support ([9f0d10c](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/9f0d10c))
+
+### 📖 Documentation
+
+- ✏️ badges ([115c4ea](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/115c4ea))
+
+### 🏡 Chore
+
+- Add test cases WithDrawerInput ([b755bf4](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/b755bf4))
+
+### ✅ Tests
+
+- WithDrawerInput ([e7a055e](https://github.com/Sunny-117/eslint-plugin-react-boundary/commit/e7a055e))
+
+### ❤️ Contributors
+
+- Sunny-117 <zhiqiangfu6@gmail.com>
+
 ## v0.0.11
 
 [compare changes](https://github.com/Sunny-117/eslint-plugin-react-boundary/compare/v0.0.10...v0.0.11)
