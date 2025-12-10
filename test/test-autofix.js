@@ -8,6 +8,15 @@ async function testAutofix() {
     console.log('🧪 Testing autofix functionality for require-with-boundary rule...\n');
 
     // Create ESLint instance with autofix enabled
+    let parser;
+    try {
+        parser = require('@typescript-eslint/parser');
+        console.log('✅ TypeScript parser found, using it for TS/TSX files');
+    } catch (err) {
+        console.warn('⚠️ TypeScript parser not found, falling back to default parser');
+        parser = undefined;
+    }
+
     const eslint = new ESLint({
         overrideConfigFile: true,
         overrideConfig: [
@@ -16,6 +25,7 @@ async function testAutofix() {
                 languageOptions: {
                     ecmaVersion: 2018,
                     sourceType: 'module',
+                    ...(parser && { parser }),
                     parserOptions: {
                         ecmaFeatures: {
                             jsx: true,
@@ -115,6 +125,23 @@ export default function() {
 export const AiBuildPreviewComp = props => {
   return <div>Anon</div>;
 }
+            `.trim(),
+            expectedPattern: /withBoundary\(AiBuildPreviewComp\)/,
+        },
+        {
+            name: 'export const arrow function with props type - should be fixed',
+            input: `
+ export const AiBuildPreviewComp = ({disabled, footer, buildInfo}: {
+    disabled?: boolean;
+    footer?: React.ReactNode;
+    buildInfo: ReturnType<typeof useAiBuildInfo>;
+}) => {
+    return (
+        <div className="ai-build-preview" ref={scrollRef}>
+            123
+        </div>
+    );
+};
             `.trim(),
             expectedPattern: /withBoundary\(AiBuildPreviewComp\)/,
         },
